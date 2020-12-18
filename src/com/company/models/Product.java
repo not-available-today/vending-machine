@@ -1,6 +1,6 @@
 package com.company.models;
 
-public abstract class Product {
+public class Product {
 
     //region Properties
     private String type;
@@ -12,9 +12,7 @@ public abstract class Product {
     //endregion
 
     //region Public Methods
-    public void printReceipt(){
-        System.out.println("Enjoy your "+ this.count + " " +this.type );
-    }
+
 
     //endregion
 

@@ -4,10 +4,12 @@ import com.company.models.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
+
 
 public class VendingMachine {
     //region Properties
-    private HashMap<String, ArrayList<ArrayList<Product>>> vendingMachine = new HashMap<>();
+    private HashMap<String, ArrayList<LinkedList<Product>>> vendingMachine;
     //endregion
 
     //region Constructors
@@ -15,11 +17,11 @@ public class VendingMachine {
     //endregion
 
     //region Public Methods
-    public HashMap<String, ArrayList<ArrayList<Product>>> initializeInventory() {
-        HashMap<String, ArrayList<ArrayList<Product>>> table = new HashMap<>();
-        ArrayList<ArrayList<Product>> chips = initializeChips();
-        ArrayList<ArrayList<Product>> sodas = initializeSodas();
-        ArrayList<ArrayList<Product>> miscellaneous = initializeMisc();
+    public  HashMap<String, ArrayList<LinkedList<Product>>> initializeInventory() {
+        HashMap<String, ArrayList<LinkedList<Product>>> table = new HashMap<>();
+        ArrayList<LinkedList<Product>> chips = initializeChips();
+        ArrayList<LinkedList<Product>> sodas = initializeSodas();
+        ArrayList<LinkedList<Product>> miscellaneous = initializeMisc();
 
         table.put("A", chips);
         table.put("B", sodas);
@@ -29,11 +31,11 @@ public class VendingMachine {
     }
 
 
-    private ArrayList<ArrayList<Product>> initializeChips() {
-        ArrayList<Product> lays = new ArrayList<>();
-        ArrayList<Product> doritos = new ArrayList<>();
-        ArrayList<Product> pringles = new ArrayList<>();
-        ArrayList<ArrayList<Product>> allProductsInRow = new ArrayList<>();
+    private ArrayList<LinkedList<Product>> initializeChips() {
+        LinkedList<Product> lays = new LinkedList<>();
+        LinkedList<Product> doritos = new LinkedList<>();
+        LinkedList<Product> pringles = new LinkedList<>();
+        ArrayList<LinkedList<Product>> allProductsInRow = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
             lays.add(new LaysChips());
             doritos.add(new Doritos());
@@ -46,11 +48,11 @@ public class VendingMachine {
         return allProductsInRow;
     }
 
-    private ArrayList<ArrayList<Product>> initializeSodas() {
-        ArrayList<Product> cokes = new ArrayList<>();
-        ArrayList<Product> fantas = new ArrayList<>();
-        ArrayList<Product> waters = new ArrayList<>();
-        ArrayList<ArrayList<Product>> allProductsInRow = new ArrayList<>();
+    private ArrayList<LinkedList<Product>> initializeSodas() {
+        LinkedList<Product> cokes = new LinkedList<>();
+        LinkedList<Product> fantas = new LinkedList<>();
+        LinkedList<Product> waters = new LinkedList<>();
+        ArrayList<LinkedList<Product>> allProductsInRow = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
             cokes.add(new CocaCola());
             fantas.add(new Fanta());
@@ -63,11 +65,11 @@ public class VendingMachine {
         return allProductsInRow;
     }
 
-    private ArrayList<ArrayList<Product>> initializeMisc() {
-        ArrayList<Product> masks = new ArrayList<>();
-        ArrayList<Product> snickers = new ArrayList<>();
-        ArrayList<Product> mnms = new ArrayList<>();
-        ArrayList<ArrayList<Product>> allProductsInRow = new ArrayList<>();
+    private ArrayList<LinkedList<Product>> initializeMisc() {
+        LinkedList<Product> masks = new LinkedList<>();
+        LinkedList<Product> snickers = new LinkedList<>();
+        LinkedList<Product> mnms = new LinkedList<>();
+        ArrayList<LinkedList<Product>> allProductsInRow = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
             masks.add(new Mask());
             snickers.add(new Snickers());
@@ -80,40 +82,76 @@ public class VendingMachine {
         return allProductsInRow;
     }
 
-    public Product processCommand(Command command, VendingMachine vendingMachine) {
-        ArrayList<ArrayList<Product>> tempRow = new ArrayList<>();
-        ArrayList<Product> tempColumn;
-        for (String i : vendingMachine.getVendingMachine().keySet()
+    public Product processCommand(Command command) {
+        ArrayList<LinkedList<Product>> row = assignRow(command);
+        LinkedList<Product> column = assignColumn(command, row);
+        return returnProduct(command,column);
+
+    }
+
+    private ArrayList<LinkedList<Product>> assignRow(Command command) {
+        ArrayList<LinkedList<Product>> tempRow = new ArrayList<>();
+        for (String i : vendingMachine.keySet()
         ) {
             if (command.getRow().equals(i)) {
-                tempRow = vendingMachine.getVendingMachine().get(i);
+                tempRow = vendingMachine.get(i);
             }
         }
+        return tempRow;
+    }
+
+    private LinkedList<Product> assignColumn(Command command, ArrayList<LinkedList<Product>> tempRow) {
+        LinkedList<Product> tempColumn = new LinkedList<>();
         for (int i = 0; i < tempRow.size(); i++) {
             if (command.getColumn() == i) {
                 tempColumn = tempRow.get(i);
-                Product userProduct = tempColumn.get(i);
-                userProduct.setType(tempColumn.get(i).toString());
-                userProduct.setCount(command.getCount());
-                return userProduct;
             }
         }
-        return null;
+        return tempColumn;
     }
+
+    private Product returnProduct(Command command, LinkedList<Product> tempColumn){
+        Product userProduct = new Product();
+        userProduct.setCount(command.getCount());
+        for (int i = 0; i < tempColumn.size(); i++) {
+            if (command.getColumn() == i) {
+                userProduct = tempColumn.get(i);
+                userProduct.setType(tempColumn.get(i).toString());
+            }
+        }
+
+        userProduct.setCount(command.getCount());
+
+        return userProduct;
+    }
+
+    public void updateInventory(Command command){
+        ArrayList<LinkedList<Product>> row = assignRow(command);
+        LinkedList<Product> column = assignColumn(command, row);
+        Product userProduct = returnProduct(command,column);
+        for (int i = 0; i < command.getCount(); i++) {
+            column.poll();
+        }
+        System.out.println("Remaining stock of " + userProduct.getType() +":" + column.size());
+    }
+
+    public void printReceipt(Product product){
+        System.out.println("Enjoy your "+ product.getCount() + " " +product.getType() );
+    }
+
 
 
     //endregion
 
     //region Setters and Getters
 
-    public HashMap<String, ArrayList<ArrayList<Product>>> getVendingMachine() {
+
+    public HashMap<String, ArrayList<LinkedList<Product>>> getVendingMachine() {
         return vendingMachine;
     }
 
-
-    public void setVendingMachine(HashMap<String, ArrayList<ArrayList<Product>>> vendingMachine) {
+    public void setVendingMachine(HashMap<String, ArrayList<LinkedList<Product>>> vendingMachine) {
         this.vendingMachine = vendingMachine;
     }
-
-    //endregion
+//endregion
 }
